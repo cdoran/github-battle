@@ -1,38 +1,103 @@
 import React from 'react'
 import { battle } from '../utils/api'
 import Card from './Card'
-import { FaCompass, FaBriefcase, FaUsers, FaUserFriends, FaCode, FaUser } from 'react-icons/fa'
+import Loading from './Loading'
+import { FaCompass, FaBriefcase, FaUsers, FaUserFriends, FaCode, FaUser, FaFileExcel } from 'react-icons/fa'
 import PropTypes from 'prop-types'
 
-function ProfileList({profile}) {
-    return ( 
-        <ul className="card-list">
-            <li>
-                <FaUser color="" size={22} />
-                {profile.name}
-            </li>
-            { profile.location && (
+const styles = {
+    container: {
+        position: 'relative',
+        display: 'flex',
+    },
+    tooltip: {
+        boxSizing: 'border-box',
+        position: 'absolute',
+        width: '160px',
+        bottom: '100%',
+        left: '50%',
+        marginLeft: '-80px',
+        borderRadius: '3px',
+        backgroundColor: 'hsla(0, 0%, 20%, 0.9)',
+        padding: '7px',
+        marginBottom: '5px',
+        color: '#fff',
+        textAlign: 'center',
+        fontSize: '14px'
+    }
+}
+
+
+class ProfileList extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            hovering: null,
+        }
+        this.mouseOver = this.mouseOver.bind(this)
+        this.mouseOut = this.mouseOut.bind(this)
+    }
+
+    mouseOver(toolTip) {
+        this.setState({hovering: toolTip})
+    }
+
+    mouseOut() {
+        this.setState({hovering: null})
+    }
+
+    render() {
+        const { profile } = this.props
+        const { hovering } = this.state
+        return ( 
+            <ul className="card-list">
                 <li>
-                <FaCompass color="" size={22} />
-                {profile.location}
+                    <FaUser color="" size={22} />
+                    {profile.name}
                 </li>
-            )}
-            { profile.company && (
-                <li>
-                <FaBriefcase color="" size={22} />
-                { profile.company }
+                { profile.location && (
+                    <li 
+                      onMouseOver={() => this.mouseOver('location')} 
+                      onMouseOut={() => this.mouseOut()}
+                      style = {styles.container}
+                    >
+                    { hovering === 'location' && <div style={styles.tooltip}>User's Location</div> }
+                    <FaCompass color="" size={22} />
+                    {profile.location}
+                    </li>
+                )}
+                { profile.company && (
+                    <li 
+                      onMouseOver={() => this.mouseOver('company')}
+                      onMouseOut={() => this.mouseOut()}
+                      style={styles.container}
+                    >
+                    { hovering === 'company' && <div style={styles.tooltip}>User's Company</div> }
+                    <FaBriefcase color="" size={22} />
+                    { profile.company }
+                    </li>
+                )}
+                <li 
+                  onMouseOver={() => this.mouseOver('followers')} 
+                  onMouseOut={() => this.mouseOut()}
+                  style={styles.container}
+                >
+                    { hovering === 'followers' && <div style={styles.tooltip}>User's Followers</div> }
+                    <FaUsers color="" size={22} />
+                    {profile.followers.toLocaleString()}
                 </li>
-            )}
-            <li>
-                <FaUsers color="" size={22} />
-                {profile.followers.toLocaleString()}
-            </li>
-            <li>
-                <FaUserFriends color="" size={22} />
-                {profile.following.toLocaleString()}
-            </li>
-        </ul>
-    )
+                <li 
+                  onMouseOver={() => this.mouseOver('following')} 
+                  onMouseOut={() => this.mouseOut()}
+                  style={styles.container}
+                >
+                    { hovering === 'following' && <div style={styles.tooltip}>User is Following</div> }
+                    <FaUserFriends color="" size={22} />
+                    {profile.following.toLocaleString()}
+                </li>
+            </ul>
+        )
+    }
 }
 
 ProfileList.propTypes = {
@@ -72,7 +137,7 @@ export default class Result extends React.Component {
         const { winner, loser, error, loading } = this.state
 
         if (loading === true ) {
-            return <p>LOADING</p>
+            return <Loading />
         }
 
         if (error) {
